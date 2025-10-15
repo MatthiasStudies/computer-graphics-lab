@@ -92,8 +92,23 @@ Vector<FLOAT_TYPE, 3u> Vector<FLOAT_TYPE, N>::cross_product(const Vector<FLOAT_T
           this->vector[0] * v.vector[1] - this->vector[1] * v.vector[0] };
 }
 
+template <class FLOAT_TYPE, size_t N>
+FLOAT_TYPE  Vector<FLOAT_TYPE, N>::square_of_length() const {
+  FLOAT_TYPE sum_of_squares = static_cast<FLOAT_TYPE>(0.0);
+  for (size_t i = 0u; i < N; i++) {
+    sum_of_squares += vector[i] * vector[i];
+  }
+  return sum_of_squares;
+}
+
+template <class FLOAT_TYPE, size_t N>
+FLOAT_TYPE Vector<FLOAT_TYPE, N>::length() const {
+  return static_cast<FLOAT_TYPE>( sqrt( square_of_length() ) );
+}
+
+
 /*
-template <class FLOAT_TYPE, size_t N>  
+template <class FLOAT_TYPE, size_t N>
 void Vector<FLOAT_TYPE, N>::normalize() {
   *this /= length(); //  +/- INFINITY if length is (near to) zero
 }

@@ -60,7 +60,7 @@ struct Vector {
   // returns the cross product of this Vector with the Vector v
   // only three-dimensional case
   Vector<FLOAT_TYPE, 3u> cross_product(const Vector<FLOAT_TYPE, 3u> v) const;
-  
+
   // returns the scalar product of the given scalar and value
   template <class F, size_t K>    
   friend Vector<F, K> operator*(F scalar, Vector<F, K> value);
@@ -74,18 +74,14 @@ struct Vector {
   friend Vector<F, K> operator-(const Vector<F, K> value, const Vector<F, K> minuend);
 
   // returns the (euclidian) length of this Vector
-  /*
   FLOAT_TYPE length() const;
-  */
-  
+
   // returns the square of the this Vector's length
-  /*
   FLOAT_TYPE square_of_length() const;
-  */
 
   // returns the scalar (inner) product of two Vectors
   /*
-  template <class F, size_t K>    
+  template <class F, size_t K>
   friend F operator*(Vector<F, K> vector1, const Vector<F, K> vector2);
   */
 };
