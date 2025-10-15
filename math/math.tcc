@@ -73,6 +73,15 @@ Vector<FLOAT_TYPE, N> operator-(const Vector<FLOAT_TYPE, N> value, const Vector<
   return difference;
 }
 
+template <class FLOAT_TYPE, size_t N>
+FLOAT_TYPE operator*(Vector<FLOAT_TYPE, N> vector1, const Vector<FLOAT_TYPE, N> vector2) {
+  FLOAT_TYPE scalar_product = static_cast<FLOAT_TYPE>(0.0);
+  for (size_t i = 0u; i < N; i++) {
+    scalar_product += vector1.vector[i] * vector2.vector[i];
+  }
+  return scalar_product;
+}
+
 template <class FLOAT_TYPE, size_t N>  
 FLOAT_TYPE & Vector<FLOAT_TYPE, N>::operator[](std::size_t i) {
   return vector[i];
@@ -107,7 +116,7 @@ FLOAT_TYPE Vector<FLOAT_TYPE, N>::length() const {
 }
 
 
-/*
+
 template <class FLOAT_TYPE, size_t N>
 void Vector<FLOAT_TYPE, N>::normalize() {
   *this /= length(); //  +/- INFINITY if length is (near to) zero
@@ -124,5 +133,5 @@ FLOAT_TYPE Vector<FLOAT_TYPE, N>::angle(size_t axis_1, size_t axis_2) const {
   Vector<FLOAT_TYPE, N> normalized = (1.0f / length()) * *this;
   return atan2( normalized[axis_2], normalized[axis_1] );
 }
-*/
+
 
