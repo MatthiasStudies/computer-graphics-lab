@@ -337,50 +337,70 @@ namespace
         EXPECT_NEAR(0.0, vector1[1], 0.00001);
     }
 
-    /*
-    TEST(VECTOR, ScalarVectorProduct1) {
-      Vector2df vector1 = {1.0, 0.0};
-      Vector2df vector2 = {0.0, 1.0};
 
-      EXPECT_NEAR(0.0, vector1 * vector2, 0.00001);
+    TEST(VECTOR, ScalarVectorProduct1)
+    {
+        Vector2df vector1 = {1.0, 0.0};
+        Vector2df vector2 = {0.0, 1.0};
+
+        EXPECT_NEAR(0.0, vector1 * vector2, 0.00001);
     }
 
-    TEST(VECTOR, ScalarVectorProduct2) {
-      Vector3df vector1 = {1.0, 2.0, -1.0};
-      Vector3df vector2 = {-1.0, 1.0, 3.0};
+    TEST(VECTOR, ScalarVectorProduct2)
+    {
+        Vector3df vector1 = {1.0, 2.0, -1.0};
+        Vector3df vector2 = {-1.0, 1.0, 3.0};
 
-      float scalar = vector1 * vector2;
+        float scalar = vector1 * vector2;
 
-      EXPECT_NEAR(-2.0, scalar, 0.00001);
-      EXPECT_NEAR(1.0, vector1[0], 0.00001);
-      EXPECT_NEAR(2.0,  vector1[1], 0.00001);
-      EXPECT_NEAR(-1.0, vector1[2], 0.00001);
-      EXPECT_NEAR(-1.0, vector2[0], 0.00001);
-      EXPECT_NEAR(1.0,  vector2[1], 0.00001);
-      EXPECT_NEAR(3.0, vector2[2], 0.00001);
+        EXPECT_NEAR(-2.0, scalar, 0.00001);
+        EXPECT_NEAR(1.0, vector1[0], 0.00001);
+        EXPECT_NEAR(2.0, vector1[1], 0.00001);
+        EXPECT_NEAR(-1.0, vector1[2], 0.00001);
+        EXPECT_NEAR(-1.0, vector2[0], 0.00001);
+        EXPECT_NEAR(1.0, vector2[1], 0.00001);
+        EXPECT_NEAR(3.0, vector2[2], 0.00001);
     }
 
-    TEST(VECTOR, ScalarVectorProduct3df_1) {
-      Vector3df vector1 = {0.0, 1.0, 0.0};
-      Vector3df vector2 = {0.0, 0.0, 1.0};
+    TEST(VECTOR, ScalarVectorProduct3df_1)
+    {
+        Vector3df vector1 = {0.0, 1.0, 0.0};
+        Vector3df vector2 = {0.0, 0.0, 1.0};
 
-      EXPECT_NEAR(0.0, vector1 * vector2, 0.00001);
+        EXPECT_NEAR(0.0, vector1 * vector2, 0.00001);
     }
 
-    TEST(VECTOR, ScalarVectorProduct3df_2) {
-      Vector3df vector1 = {-1.0, 2.0, 3.0};
-      Vector3df vector2 = { 2.0, 2.0, -1.0};
+    TEST(VECTOR, ScalarVectorProduct3df_2)
+    {
+        Vector3df vector1 = {-1.0, 2.0, 3.0};
+        Vector3df vector2 = {2.0, 2.0, -1.0};
 
-      EXPECT_NEAR(-1.0, vector1 * vector2, 0.00001);
+        EXPECT_NEAR(-1.0, vector1 * vector2, 0.00001);
     }
 
-    TEST(VECTOR, ScalarVectorProduct3df_3) {
-      Vector3df vector1 = {0.0,  -2.0, 0.0};
-      Vector3df vector2 = {0.0, -10.0, 0.0};
+    TEST(VECTOR, ScalarVectorProduct3df_3)
+    {
+        Vector3df vector1 = {0.0, -2.0, 0.0};
+        Vector3df vector2 = {0.0, -10.0, 0.0};
 
-      EXPECT_NEAR(20.0, vector1 * vector2, 0.00001);
+        EXPECT_NEAR(20.0, vector1 * vector2, 0.00001);
     }
-    */
+
+    TEST(VECTOR, ScalarVectorProduct4df_1)
+    {
+        Vector4df vector1 = {1.0, 2.0, 3.0, 4.0};
+        Vector4df vector2 = {4.0, 3.0, 2.0, 1.0};
+
+        EXPECT_NEAR(20.0, vector1 * vector2, 0.00001);
+    }
+
+    TEST(VECTOR, ScalarVectorProduct4df_2)
+    {
+        Vector4df vector1 = {1.0, 0.0, 0.0, 0.0};
+        Vector4df vector2 = {0.0, 1.0, 0.0, 0.0};
+
+        EXPECT_NEAR(0.0, vector1 * vector2, 0.00001);
+    }
 
     TEST(VECTOR, CrossVectorProduct1)
     {
