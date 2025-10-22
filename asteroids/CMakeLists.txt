@@ -22,6 +22,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(main_game game.cc math.cc geometry.cc sdl2_renderer.cc sound.cc main_game.cc physics.cc sdl2_game_controller.cc timer.cc)
 target_link_libraries(main_game SDL2 SDL2_mixer)
 
+file(COPY sound DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 enable_testing()
 add_executable(math_test math_test.cc math.cc)

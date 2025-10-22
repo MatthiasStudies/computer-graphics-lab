@@ -1,5 +1,4 @@
 *.cmake
-!asteroids/cmake/*.cmake
 CMakeCache.txt
 cmake-build-*/
 CMakeFiles/
