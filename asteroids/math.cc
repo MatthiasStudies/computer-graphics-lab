@@ -6,7 +6,7 @@
 
 // instantiations of each template class/struct
 template class Vector<float, 2u>;
-template class Vector<float, 3u>; 
+template class Vector<float, 3u>;
 template class Vector<float, 4u>;
 
 
@@ -28,5 +28,3 @@ template Vector<float, 4u> operator+(Vector<float, 4u> value, const Vector<float
 template Vector<float, 4u> operator-(Vector<float, 4u> value, const Vector<float, 4u> addend);
 
 //template float operator*(Vector<float, 4u> value, const Vector<float, 4u> addend);
-
-

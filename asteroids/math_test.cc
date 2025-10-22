@@ -208,28 +208,28 @@ namespace
     {
         Vector2df vector{0.0f, 1.0f};
 
-        EXPECT_NEAR(PI / 2.0f, vector.angle(0,1), 0.00001);
+        EXPECT_NEAR(PI / 2.0f, vector.angle(0, 1), 0.00001);
     }
 
     TEST(VECTOR, Angle180)
     {
         Vector2df vector{-1.0f, 0.0f};
 
-        EXPECT_NEAR(PI, vector.angle(0,1), 0.00001);
+        EXPECT_NEAR(PI, vector.angle(0, 1), 0.00001);
     }
 
     TEST(VECTOR, Angle270)
     {
         Vector2df vector{0.0f, -1.0f};
 
-        EXPECT_NEAR(-PI / 2.0f, vector.angle(0,1), 0.00001);
+        EXPECT_NEAR(-PI / 2.0f, vector.angle(0, 1), 0.00001);
     }
 
     TEST(VECTOR, Angle0)
     {
         Vector2df vector(0.0f);
 
-        EXPECT_NEAR(0.0f, vector.angle(0,1), 0.00001);
+        EXPECT_NEAR(0.0f, vector.angle(0, 1), 0.00001);
     }
 
 

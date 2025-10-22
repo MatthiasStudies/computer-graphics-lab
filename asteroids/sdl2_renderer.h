@@ -10,35 +10,38 @@
 // SDL2Renderer is responsible for creating and opening a window for the Asteroid-Game, when init() is called.
 // Each time render() is called, it draws all visible game objects, score, ...
 // exit() frees view resources and closes the window
-class SDL2Renderer : public Renderer {
+class SDL2Renderer : public Renderer
+{
   std::string title;
   int window_width;
   int window_height;
   int asteroid_color_index;
-  SDL_Window * window = nullptr;
-  SDL_Surface * screenSurface = nullptr;
-  SDL_Renderer * renderer = nullptr;
+  SDL_Window* window = nullptr;
+  SDL_Surface* screenSurface = nullptr;
+  SDL_Renderer* renderer = nullptr;
 
   // render methods for the specific game objects, score, and free ships
   void renderSpaceship(Vector2df position, float angle);
-  void render(Spaceship * ship); 
-  void render(Torpedo * torpedo);
-  void render(Asteroid * asteroid);
-  void render(SpaceshipDebris * debris);
-  void render(Debris * debris); 
-  void render(Saucer * saucer);
+  void render(Spaceship* ship);
+  void render(Torpedo* torpedo);
+  void render(Asteroid* asteroid);
+  void render(SpaceshipDebris* debris);
+  void render(Debris* debris);
+  void render(Saucer* saucer);
   void renderFreeShips();
   void renderScore();
+
 public:
-  SDL2Renderer(Game & game, std::string title, int window_width = 1024, int window_height = 768)
-    : Renderer(game), title(title), window_width(window_width), window_height(window_height), asteroid_color_index(0) { }
-  
+  SDL2Renderer(Game& game, std::string title, int window_width = 1024, int window_height = 768)
+    : Renderer(game), title(title), window_width(window_width), window_height(window_height), asteroid_color_index(0)
+  {
+  }
+
   virtual bool init();
-  
+
   virtual void render();
-  
-  virtual void exit(); 
-  
+
+  virtual void exit();
 };
 
 #endif

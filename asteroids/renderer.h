@@ -4,14 +4,19 @@
 #include "game.h"
 
 // specifices essential methods for a minimal game renderer
-class Renderer {
+class Renderer
+{
 protected:
-  Game & game;  
+    Game& game;
+
 public:
-  Renderer(Game & game) : game(game) { }
-  virtual bool init() = 0;
-  virtual void render() = 0;
-  virtual void exit() = 0;
+    Renderer(Game& game) : game(game)
+    {
+    }
+
+    virtual bool init() = 0;
+    virtual void render() = 0;
+    virtual void exit() = 0;
 };
 
 #endif
