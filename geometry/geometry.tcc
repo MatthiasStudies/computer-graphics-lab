@@ -73,11 +73,24 @@ Sphere<FLOAT,N>::Sphere(Vector<FLOAT,N> center, FLOAT radius)
 {
 }
 
+// returns true if the given point is inside this Sphere or on its surface
+template <class FLOAT, size_t N>
+bool Sphere<FLOAT,N>::inside(const Vector<FLOAT, N> p) const {
+  Vector<FLOAT, N> d = p - center;
+  return (d * d) <= (radius * radius);
+}
+
+// returns true if this Sphere intersects with the given sphere
+template <class FLOAT, size_t N>
+bool Sphere<FLOAT,N>::intersects(Sphere<FLOAT, N> sphere) const {
+  Vector<FLOAT, N> dc = center - sphere.center;
+  FLOAT rsum = radius + sphere.radius;
+  return (dc * dc) <= (rsum * rsum);
+}
 
 // solution via
 // (g(t) - center )^2  = ( (ray.origin - center) + t ray.direction)^2 = r^2 
 // and abc-formula
-/*
 template <class FLOAT, size_t N>
 FLOAT Sphere<FLOAT,N>::intersects(const Ray<FLOAT, N> &ray) const {
   Vector<FLOAT,N> om = ray.origin - center;
@@ -89,28 +102,32 @@ FLOAT Sphere<FLOAT,N>::intersects(const Ray<FLOAT, N> &ray) const {
    return 0;
   }
   d = sqrt(d);
-  if ( inside( ray.origin ) ) {
-    return 0.5 * std::max(-b + d, -b - d) / a;
+  // Determine if origin is inside without relying on inside() to avoid ordering issues
+  bool origin_inside = (om * om) <= (radius * radius);
+  if ( origin_inside ) {
+    return static_cast<FLOAT>(0.5) * std::max(-b + d, -b - d) / a;
   }
-  return 0.5 * std::min( std::max<FLOAT>(0.0, (-b + d)) , (-b - d) ) / a; 
+  return static_cast<FLOAT>(0.5) * std::min( std::max<FLOAT>(static_cast<FLOAT>(0.0), (-b + d)) , (-b - d) ) / a; 
 }
 
 template <class FLOAT, size_t N>
 bool Sphere<FLOAT,N>::intersects(const Ray<FLOAT, N> &ray, Intersection_Context<FLOAT, N> & context) const {
   FLOAT t = intersects(ray);
-  if (t <= 0.0) {
+  if (t <= static_cast<FLOAT>(0.0)) {
     return false;
   }
   context.t = t;
   context.intersection = ray.origin + t * ray.direction;
   context.normal = context.intersection - center;
   context.normal.normalize();
-  if ( inside( ray.origin ) ) {
+  // Recompute inside to orient normal if needed
+  Vector<FLOAT,N> om = ray.origin - center;
+  bool origin_inside = (om * om) <= (radius * radius);
+  if ( origin_inside ) {
     context.normal = static_cast<FLOAT>(-1.0) * context.normal; // ray starts inside sphere, normal points to the inside;
   }
   return true;
 }
-*/
 template <class FLOAT, size_t N>
 Triangle<FLOAT, N>::Triangle(Vector<FLOAT, N> a, Vector<FLOAT, N> b, Vector<FLOAT, N> c, Vector<FLOAT, N> na, Vector<FLOAT, N> nb, Vector<FLOAT, N> nc)
  : a(a), b(b), c(c), na(na), nb(nb), nc(nc) { }
