@@ -4,13 +4,15 @@
 
 
 void SDL2Renderer::renderSpaceship(Vector2df position, float angle) {
-    static std::array<SDL_Point, 6> ship_points{SDL_Point{-6, 3},
+    static std::array<SDL_Point, 8> ship_points{SDL_Point{-6, 3},
                                               SDL_Point{-6,-3},
                                               SDL_Point{-10,-6},
+                                              SDL_Point{ 0, -8},
                                               SDL_Point{ 14, 0},
+      SDL_Point{0, 8},
                                               SDL_Point{-10, 6},
                                               SDL_Point{-6, 3}};
-  
+
   std::array<SDL_Point, ship_points.size()> points;
 
   float cos_angle = std::cos(angle);
@@ -41,14 +43,14 @@ void SDL2Renderer::render(Spaceship * ship) {
       }
        SDL_RenderDrawLines(renderer, points.data(), points.size());
     }
-  renderSpaceship(ship->get_position(), ship->get_angle());  
+  renderSpaceship(ship->get_position(), ship->get_angle());
   }
 }
 
 void SDL2Renderer::render(Saucer * saucer) {
   static SDL_Point saucer_points[] = { {-16, -6}, {16, -6}, {40, 6}, {-40, 6}, {-16, 18}, {16, 18},
                                        {40, 6}, {16, -6}, {8, -18}, {-8, -18}, {-16, -6}, {-40, 6} };
-  
+
   std::array<SDL_Point, std::span{saucer_points}.size()> points;
 
   Vector2df position = saucer->get_position();
@@ -73,18 +75,30 @@ void SDL2Renderer::render(Torpedo * torpedo) {
   SDL_RenderDrawPoint(renderer, torpedo->get_position()[0], torpedo->get_position()[1] + 1);
   SDL_RenderDrawPoint(renderer, torpedo->get_position()[0] - 1, torpedo->get_position()[1]);
 }
-  
+
+SDL_Color asteroid_colors[] = {
+  {255, 0, 0, 255},
+  {0, 255, 0, 255},
+  {0, 0, 255, 255},
+  {255, 255, 0, 255},
+  {0, 255, 255, 255},
+  {255, 0, 255, 255}
+};
+SDL_Color current_color = asteroid_colors[0];
+Uint32 asteroid_color_change_delay = 1000;
+Uint32 last_time = 0;
+
 void SDL2Renderer::render(Asteroid * asteroid) {
   static SDL_Point asteroids_points1[] = {
     { 0, -12}, {16, -24}, {32, -12}, {24, 0}, {32, 12}, {8, 24}, {-16, 24}, {-32, 12}, {-32, -12}, {-16, -24}, {0, -12}
-  };   
+  };
   static SDL_Point asteroids_points2[] = {
     { 16, -6}, {32, -12}, {16, -24}, {0, -16}, {-16, -24}, {-24, -12}, {-16, -0}, {-32, 12}, {-16, 24}, {-8, 16}, {16, 24}, {32, 6}, {16, -6}
-  }; 
+  };
   static SDL_Point asteroids_points3[] = {
     {-16, 0}, {-32, 6}, {-16, 24}, {0, 6}, {0, 24}, {16, 24}, {32, 6}, {32, 6}, {16, -24}, {-8, -24}, {-32, -6}, {-16, 0}
   };
-  static SDL_Point asteroids_points4[] = {  
+  static SDL_Point asteroids_points4[] = {
     {8,0}, {32,-6}, {32, -12}, {8, -24}, {-16, -24}, {-8, -12}, {-32, -12}, {-32, 12}, {-16, 24}, {8, 16}, {16, 24}, {32, 12}, {8, 0}
   };
   static size_t sizes[] = {std::span{asteroids_points1}.size(),
@@ -96,21 +110,39 @@ void SDL2Renderer::render(Asteroid * asteroid) {
   if ( asteroid->get_rock_type() == 1 ) asteroids_points = asteroids_points2;
   if ( asteroid->get_rock_type() == 2 ) asteroids_points = asteroids_points3;
   if ( asteroid->get_rock_type() == 3 ) asteroids_points = asteroids_points4;
- 
+
   SDL_Point points[std::span{asteroids_points4}.size()];
-  
+
   float scale = (asteroid->get_size() == 3 ? 1.0 : ( asteroid->get_size() == 2 ? 0.5 : 0.25 ));
   Vector2df position = asteroid->get_position();
   for (size_t i = 0; i < size; i++) {
     points[i].x = scale * asteroids_points[i].x + position[0];
     points[i].y = scale * asteroids_points[i].y + position[1];
   }
+
+  Uint32 time = SDL_GetTicks();
+  Uint32 delta = time - last_time;
+
+  if ( delta > asteroid_color_change_delay )
+  {
+    current_color = asteroid_colors[asteroid_color_index];
+
+    asteroid_color_index = (asteroid_color_index + 1) % std::span{asteroid_colors}.size();
+    last_time = time;
+  }
+
+    SDL_SetRenderDrawColor( renderer, current_color.r,
+                                        current_color.g,
+                                        current_color.b,
+                                        current_color.a );
+
   SDL_RenderDrawLines(renderer, points, size);
+  SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
 }
 
 
 void SDL2Renderer::render(SpaceshipDebris * debris) {
-  static SDL_Point ship_points[6][2] = {{ SDL_Point{-2, -1}, SDL_Point{-10, 7} }, 
+  static SDL_Point ship_points[6][2] = {{ SDL_Point{-2, -1}, SDL_Point{-10, 7} },
                                         { SDL_Point{3, 1}, SDL_Point{7, 8} },
                                         { SDL_Point{0, 3}, SDL_Point{6, 1} },
                                         { SDL_Point{3, -1}, SDL_Point{ -5, -7} },
@@ -127,10 +159,10 @@ void SDL2Renderer::render(SpaceshipDebris * debris) {
     points[1].x = scale * debris_direction[i][0] + ship_points[i][1].x + position[0];
     points[1].y = scale * debris_direction[i][1] + ship_points[i][1].y + position[1];
     if ( debris->get_time_to_delete() >= 0.5 * i )  {
-      SDL_RenderDrawLine(renderer, points[0].x, points[0].y, points[1].x, points[1].y );    
+      SDL_RenderDrawLine(renderer, points[0].x, points[0].y, points[1].x, points[1].y );
     }
   }
-                                  
+
 }
 
 void SDL2Renderer::render(Debris * debris) {
@@ -149,7 +181,7 @@ void SDL2Renderer::renderFreeShips() {
   constexpr float FREE_SHIP_X = 128;
   constexpr float FREE_SHIP_Y = 64;
   Vector2df position = {FREE_SHIP_X, FREE_SHIP_Y};
-  
+
   for (int i = 0; i < game.get_no_of_ships(); i++) {
     renderSpaceship( position, -PI / 2.0 );
     position[0] += 20.0;
@@ -162,7 +194,7 @@ void SDL2Renderer::renderFreeShips() {
 void SDL2Renderer::renderScore() {
   constexpr float SCORE_X = 128 - 48;
   constexpr float SCORE_Y = 48 - 4;
-  
+
   static SDL_Point digit_0[] = { {0,-8}, {4,-8}, {4,0}, {0,0}, {0, -8} };
   static SDL_Point digit_1[] = { {4,0}, {4,-8} };
   static SDL_Point digit_2[] = { {0,-8}, {4,-8}, {4,-4}, {0,-4}, {0,0}, {4,0}  };
@@ -173,16 +205,16 @@ void SDL2Renderer::renderScore() {
   static SDL_Point digit_7[] = { {0,-8}, {4,-8}, {4,0} };
   static SDL_Point digit_8[] = { {0,-8}, {4,-8}, {4,0}, {0,0}, {0,-8}, {0, -4}, {4, -4} };
   static SDL_Point digit_9[] = { {4, 0}, {4,-8}, {0,-8}, {0, -4}, {4, -4} };
-  
-  static size_t sizes[] = { std::span{digit_0}.size(), 
-                            std::span{digit_1}.size(), 
-                            std::span{digit_2}.size(), 
-                            std::span{digit_3}.size(), 
-                            std::span{digit_4}.size(), 
-                            std::span{digit_5}.size(), 
-                            std::span{digit_6}.size(), 
-                            std::span{digit_7}.size(), 
-                            std::span{digit_8}.size(), 
+
+  static size_t sizes[] = { std::span{digit_0}.size(),
+                            std::span{digit_1}.size(),
+                            std::span{digit_2}.size(),
+                            std::span{digit_3}.size(),
+                            std::span{digit_4}.size(),
+                            std::span{digit_5}.size(),
+                            std::span{digit_6}.size(),
+                            std::span{digit_7}.size(),
+                            std::span{digit_8}.size(),
                             std::span{digit_9}.size() };
   static SDL_Point * digits[] = {digit_0, digit_1, digit_2, digit_3, digit_4, digit_5, digit_6, digit_7, digit_8, digit_9 };
 
@@ -194,7 +226,7 @@ void SDL2Renderer::renderScore() {
   }
   size_t x = SCORE_X + 20 * no_of_digits;
   size_t y = SCORE_Y;
-  
+
   do {
     int d = score % 10;
     score /= 10;
@@ -235,7 +267,7 @@ void SDL2Renderer::render() {
   SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xFF );
   SDL_RenderClear( renderer );
   SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-  
+
   for (Body2df * body : game.get_physics().get_bodies() ) {
     TypedBody * typed_body = static_cast<TypedBody *>(body);
     auto type = typed_body->get_type();
