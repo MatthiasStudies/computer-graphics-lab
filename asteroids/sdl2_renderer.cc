@@ -2,19 +2,48 @@
 #include <span>
 #include <utility>
 
+const float PIXEL_RADIUS = 2;
+const int PIXEL_SIZE = PIXEL_RADIUS * 2;
 
 void SDL2Renderer::renderSpaceship(Vector2df position, float angle)
 {
-  static std::array<SDL_Point, 8> ship_points{
-    SDL_Point{-6, 3},
-    SDL_Point{-6, -3},
-    SDL_Point{-10, -6},
-    SDL_Point{0, -8},
-    SDL_Point{14, 0},
-    SDL_Point{0, 8},
-    SDL_Point{-10, 6},
-    SDL_Point{-6, 3}
+  static std::array ship_points {
+    SDL_Point{8, 1},
+    SDL_Point{4, 1},
+    SDL_Point{4, 3},
+    SDL_Point{-2, 3},
+    SDL_Point{-2, 5},
+    SDL_Point{-8, 5},
+    SDL_Point{-8, 3},
+    SDL_Point{-4, 3},
+
+    // right part
+    SDL_Point{-4, -3},
+    SDL_Point{-8, -3},
+    SDL_Point{-8, -5},
+    SDL_Point{-2, -5},
+    SDL_Point{-2, -3},
+    SDL_Point{4, -3},
+    SDL_Point{4, -1},
+    SDL_Point{8, -1},
+    SDL_Point{8, 1},
   };
+  // static std::array ship_points{
+  //   SDL_Point{PIXEL_RADIUS, PIXEL_RADIUS},
+  //   SDL_Point{PIXEL_RADIUS, -PIXEL_RADIUS},
+  //   SDL_Point{-PIXEL_RADIUS, -PIXEL_RADIUS},
+  //   SDL_Point{-PIXEL_RADIUS, PIXEL_RADIUS},
+  //   SDL_Point{PIXEL_RADIUS, PIXEL_RADIUS},
+  //   // SDL_Point{-6, 3},
+  //   // SDL_Point{-6, -3},
+  //   // SDL_Point{-10, -6},
+  //   // SDL_Point{0, -8},
+  //   // SDL_Point{14, 0},
+  //   // SDL_Point{0, 8},
+  //   // SDL_Point{-10, 6},
+  //   // SDL_Point{-6, 3}
+  // };
+
 
   std::array<SDL_Point, ship_points.size()> points;
 
@@ -22,8 +51,8 @@ void SDL2Renderer::renderSpaceship(Vector2df position, float angle)
   float sin_angle = std::sin(angle);
   for (size_t i = 0; i < ship_points.size(); i++)
   {
-    float x = ship_points[i].x;
-    float y = ship_points[i].y;
+    float x = ship_points[i].x * PIXEL_RADIUS;
+    float y = ship_points[i].y * PIXEL_RADIUS;
     points[i].x = (cos_angle * x - sin_angle * y) + position[0];
     points[i].y = (sin_angle * x + cos_angle * y) + position[1];
   }
@@ -32,7 +61,7 @@ void SDL2Renderer::renderSpaceship(Vector2df position, float angle)
 
 void SDL2Renderer::render(Spaceship* ship)
 {
-  static SDL_Point flame_points[]{{-6, 3}, {-12, 0}, {-6, -3}};
+  static SDL_Point flame_points[]{{-8, 3}, {-14, 0}, {-8, -3}};
   std::array<SDL_Point, std::span{flame_points}.size()> points;
 
   if (!ship->is_in_hyperspace())
@@ -216,7 +245,7 @@ void SDL2Renderer::renderFreeShips()
   for (int i = 0; i < game.get_no_of_ships(); i++)
   {
     renderSpaceship(position, -PI / 2.0);
-    position[0] += 20.0;
+    position[0] += 25.0;
   }
 }
 
