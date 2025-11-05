@@ -28,22 +28,6 @@ void SDL2Renderer::renderSpaceship(Vector2df position, float angle)
     SDL_Point{8, -1},
     SDL_Point{8, 1},
   };
-  // static std::array ship_points{
-  //   SDL_Point{PIXEL_RADIUS, PIXEL_RADIUS},
-  //   SDL_Point{PIXEL_RADIUS, -PIXEL_RADIUS},
-  //   SDL_Point{-PIXEL_RADIUS, -PIXEL_RADIUS},
-  //   SDL_Point{-PIXEL_RADIUS, PIXEL_RADIUS},
-  //   SDL_Point{PIXEL_RADIUS, PIXEL_RADIUS},
-  //   // SDL_Point{-6, 3},
-  //   // SDL_Point{-6, -3},
-  //   // SDL_Point{-10, -6},
-  //   // SDL_Point{0, -8},
-  //   // SDL_Point{14, 0},
-  //   // SDL_Point{0, 8},
-  //   // SDL_Point{-10, 6},
-  //   // SDL_Point{-6, 3}
-  // };
-
 
   std::array<SDL_Point, ship_points.size()> points;
 
@@ -132,27 +116,48 @@ Uint32 last_time = 0;
 
 void SDL2Renderer::render(Asteroid* asteroid)
 {
+  // Rectilinear, pixelated outlines (axis-aligned steps only)
   static SDL_Point asteroids_points1[] = {
-    {0, -12}, {16, -24}, {32, -12}, {24, 0}, {32, 12}, {8, 24}, {-16, 24}, {-32, 12}, {-32, -12}, {-16, -24}, {0, -12}
+    {0, -24}, {8, -24}, {8, -16}, {16, -16}, {16, -8}, {24, -8},
+    {24, 0}, {16, 0}, {16, 8}, {8, 8}, {8, 16}, {0, 16},
+    {0, 24}, {-8, 24}, {-8, 16}, {-16, 16}, {-16, 8}, {-24, 8},
+    {-24, 0}, {-16, 0}, {-16, -8}, {-8, -8}, {-8, -16}, {0, -16},
+    {0, -24}
   };
+
   static SDL_Point asteroids_points2[] = {
-    {16, -6}, {32, -12}, {16, -24}, {0, -16}, {-16, -24}, {-24, -12}, {-16, -0}, {-32, 12}, {-16, 24}, {-8, 16},
-    {16, 24}, {32, 6}, {16, -6}
+    {-8, -24}, {8, -24}, {8, -16}, {16, -16}, {16, -8}, {24, -8},
+    {24, 0}, {16, 0}, {16, 8}, {24, 8}, {24, 16}, {8, 16},
+    {8, 24}, {-8, 24}, {-8, 16}, {-16, 16}, {-16, 8}, {-24, 8},
+    {-24, 0}, {-16, 0}, {-16, -8}, {-24, -8}, {-24, -16}, {-8, -16},
+    {-8, -24}
   };
+
   static SDL_Point asteroids_points3[] = {
-    {-16, 0}, {-32, 6}, {-16, 24}, {0, 6}, {0, 24}, {16, 24}, {32, 6}, {32, 6}, {16, -24}, {-8, -24}, {-32, -6},
-    {-16, 0}
+    {0, -24}, {8, -24}, {8, -20}, {12, -20}, {12, -12}, {20, -12},
+    {20, -4}, {24, -4}, {24, 4}, {16, 4}, {16, 12}, {8, 12},
+    {8, 20}, {0, 20}, {0, 24}, {-8, 24}, {-8, 16}, {-16, 16},
+    {-16, 8}, {-24, 8}, {-24, 0}, {-16, 0}, {-16, -8}, {-8, -8},
+    {-8, -16}, {0, -16}, {0, -24}
   };
+
+  // Longest path used for buffer sizing
   static SDL_Point asteroids_points4[] = {
-    {8, 0}, {32, -6}, {32, -12}, {8, -24}, {-16, -24}, {-8, -12}, {-32, -12}, {-32, 12}, {-16, 24}, {8, 16}, {16, 24},
-    {32, 12}, {8, 0}
+    {0, -24}, {8, -24}, {8, -20}, {16, -20}, {16, -16}, {24, -16},
+    {24, -8}, {20, -8}, {20, 0}, {24, 0}, {24, 8}, {16, 8},
+    {16, 16}, {8, 16}, {8, 20}, {0, 20}, {0, 24}, {-8, 24},
+    {-8, 20}, {-16, 20}, {-16, 12}, {-24, 12}, {-24, 4}, {-20, 4},
+    {-20, -4}, {-24, -4}, {-24, -12}, {-16, -12}, {-16, -20},
+    {-8, -20}, {-8, -24}, {0, -24}
   };
+
   static size_t sizes[] = {
     std::span{asteroids_points1}.size(),
     std::span{asteroids_points2}.size(),
     std::span{asteroids_points3}.size(),
     std::span{asteroids_points4}.size()
   };
+
   size_t size = sizes[asteroid->get_rock_type()];
   SDL_Point* asteroids_points = asteroids_points1;
   if (asteroid->get_rock_type() == 1) asteroids_points = asteroids_points2;
@@ -161,12 +166,12 @@ void SDL2Renderer::render(Asteroid* asteroid)
 
   SDL_Point points[std::span{asteroids_points4}.size()];
 
-  float scale = (asteroid->get_size() == 3 ? 1.0 : (asteroid->get_size() == 2 ? 0.5 : 0.25));
+  float scale = (asteroid->get_size() == 3 ? 1.0f : (asteroid->get_size() == 2 ? 0.5f : 0.25f));
   Vector2df position = asteroid->get_position();
   for (size_t i = 0; i < size; i++)
   {
-    points[i].x = scale * asteroids_points[i].x + position[0];
-    points[i].y = scale * asteroids_points[i].y + position[1];
+    points[i].x = static_cast<int>(scale * asteroids_points[i].x + position[0]);
+    points[i].y = static_cast<int>(scale * asteroids_points[i].y + position[1]);
   }
 
   Uint32 time = SDL_GetTicks();
@@ -175,19 +180,73 @@ void SDL2Renderer::render(Asteroid* asteroid)
   if (delta > asteroid_color_change_delay)
   {
     current_color = asteroid_colors[asteroid_color_index];
-
     asteroid_color_index = (asteroid_color_index + 1) % std::span{asteroid_colors}.size();
     last_time = time;
   }
 
-  SDL_SetRenderDrawColor(renderer, current_color.r,
-                         current_color.g,
-                         current_color.b,
-                         current_color.a);
-
-  SDL_RenderDrawLines(renderer, points, size);
+  SDL_SetRenderDrawColor(renderer, current_color.r, current_color.g, current_color.b, current_color.a);
+  SDL_RenderDrawLines(renderer, points, static_cast<int>(size));
   SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 }
+
+//void SDL2Renderer::render(Asteroid* asteroid)
+//{
+//  static SDL_Point asteroids_points1[] = {
+//    {0, -12}, {16, -24}, {32, -12}, {24, 0}, {32, 12}, {8, 24}, {-16, 24}, {-32, 12}, {-32, -12}, {-16, -24}, {0, -12}
+//  };
+//  static SDL_Point asteroids_points2[] = {
+//    {16, -6}, {32, -12}, {16, -24}, {0, -16}, {-16, -24}, {-24, -12}, {-16, -0}, {-32, 12}, {-16, 24}, {-8, 16},
+//    {16, 24}, {32, 6}, {16, -6}
+//  };
+//  static SDL_Point asteroids_points3[] = {
+//    {-16, 0}, {-32, 6}, {-16, 24}, {0, 6}, {0, 24}, {16, 24}, {32, 6}, {32, 6}, {16, -24}, {-8, -24}, {-32, -6},
+//    {-16, 0}
+//  };
+//  static SDL_Point asteroids_points4[] = {
+//    {8, 0}, {32, -6}, {32, -12}, {8, -24}, {-16, -24}, {-8, -12}, {-32, -12}, {-32, 12}, {-16, 24}, {8, 16}, {16, 24},
+//    {32, 12}, {8, 0}
+//  };
+//  static size_t sizes[] = {
+//    std::span{asteroids_points1}.size(),
+//    std::span{asteroids_points2}.size(),
+//    std::span{asteroids_points3}.size(),
+//    std::span{asteroids_points4}.size()
+//  };
+//  size_t size = sizes[asteroid->get_rock_type()];
+//  SDL_Point* asteroids_points = asteroids_points1;
+//  if (asteroid->get_rock_type() == 1) asteroids_points = asteroids_points2;
+//  if (asteroid->get_rock_type() == 2) asteroids_points = asteroids_points3;
+//  if (asteroid->get_rock_type() == 3) asteroids_points = asteroids_points4;
+//
+//  SDL_Point points[std::span{asteroids_points4}.size()];
+//
+//  float scale = (asteroid->get_size() == 3 ? 1.0 : (asteroid->get_size() == 2 ? 0.5 : 0.25));
+//  Vector2df position = asteroid->get_position();
+//  for (size_t i = 0; i < size; i++)
+//  {
+//    points[i].x = scale * asteroids_points[i].x + position[0];
+//    points[i].y = scale * asteroids_points[i].y + position[1];
+//  }
+//
+//  Uint32 time = SDL_GetTicks();
+//  Uint32 delta = time - last_time;
+//
+//  if (delta > asteroid_color_change_delay)
+//  {
+//    current_color = asteroid_colors[asteroid_color_index];
+//
+//    asteroid_color_index = (asteroid_color_index + 1) % std::span{asteroid_colors}.size();
+//    last_time = time;
+//  }
+//
+//  SDL_SetRenderDrawColor(renderer, current_color.r,
+//                         current_color.g,
+//                         current_color.b,
+//                         current_color.a);
+//
+//  SDL_RenderDrawLines(renderer, points, size);
+//  SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+//}
 
 
 void SDL2Renderer::render(SpaceshipDebris* debris)
