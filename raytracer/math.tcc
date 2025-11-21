@@ -1,3 +1,4 @@
+#pragma once
 #include <cassert>
 
 template <class FLOAT_TYPE, size_t N>
@@ -75,7 +76,7 @@ Vector<FLOAT_TYPE, N> operator-(const Vector<FLOAT_TYPE, N> value, const Vector<
 
 template <class FLOAT_TYPE, size_t N>
 FLOAT_TYPE operator*(Vector<FLOAT_TYPE, N> vector1, const Vector<FLOAT_TYPE, N> vector2) {
-  FLOAT_TYPE scalar_product = static_cast<FLOAT_TYPE>(0.0);
+  auto scalar_product = static_cast<FLOAT_TYPE>(0.0);
   for (size_t i = 0u; i < N; i++) {
     scalar_product += vector1.vector[i] * vector2.vector[i];
   }
@@ -103,7 +104,7 @@ Vector<FLOAT_TYPE, 3u> Vector<FLOAT_TYPE, N>::cross_product(const Vector<FLOAT_T
 
 template <class FLOAT_TYPE, size_t N>
 FLOAT_TYPE  Vector<FLOAT_TYPE, N>::square_of_length() const {
-  FLOAT_TYPE sum_of_squares = static_cast<FLOAT_TYPE>(0.0);
+  auto sum_of_squares = static_cast<FLOAT_TYPE>(0.0);
   for (size_t i = 0u; i < N; i++) {
     sum_of_squares += vector[i] * vector[i];
   }
@@ -130,7 +131,7 @@ Vector<FLOAT_TYPE, N> Vector<FLOAT_TYPE, N>::get_reflective(Vector<FLOAT_TYPE, N
 
 template <class FLOAT_TYPE, size_t N>
 FLOAT_TYPE Vector<FLOAT_TYPE, N>::angle(size_t axis_1, size_t axis_2) const {
-  Vector<FLOAT_TYPE, N> normalized = (1.0f / length()) * *this;
+  Vector normalized = (1.0f / length()) * *this;
   return atan2( normalized[axis_2], normalized[axis_1] );
 }
 

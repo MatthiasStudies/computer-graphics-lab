@@ -28,12 +28,18 @@ public:
     void save_ppm(const std::string &filename) const {
         std::ofstream out(filename, std::ios::binary);
         out << "P6\n" << width_ << " " << height_ << "\n255\n";
-        for (const auto &c : pixels_) {
-            auto clamp = [](float v){ return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v); };
-            unsigned char r = static_cast<unsigned char>(255.0f * clamp(c.vector[0]));
-            unsigned char g = static_cast<unsigned char>(255.0f * clamp(c.vector[1]));
-            unsigned char b = static_cast<unsigned char>(255.0f * clamp(c.vector[2]));
-            out.put(r); out.put(g); out.put(b);
+        // iterate reverse
+        for (int y = height_ - 1; y >= 0; --y) {
+            for (int x = 0; x < width_; ++x) {
+                const Vector3df &c = get_pixel(x, y);
+                auto clamp = [](const float v){ return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v); };
+                const auto r = static_cast<unsigned char>(255.0f * clamp(c.vector[0]));
+                const auto g = static_cast<unsigned char>(255.0f * clamp(c.vector[1]));
+                const auto b = static_cast<unsigned char>(255.0f * clamp(c.vector[2]));
+                out.put(r);
+                out.put(g);
+                out.put(b);
+            }
         }
     }
 };

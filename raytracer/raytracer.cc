@@ -137,12 +137,15 @@ static Scene create_cornell_box_scene() {
   float s = 1.0f;
 
   // Floor
+  // scene.objects.push_back(
+  //   SceneObject(Triangle3df({-s, -s, -s}, { s, -s, -s}, { s, -s,  s}), white)
+  // );
   scene.objects.emplace_back(Triangle3df({-s, -s, -s}, { s, -s, -s}, { s, -s,  s}), white);
   scene.objects.emplace_back(Triangle3df({-s, -s, -s}, { s, -s,  s}, {-s, -s,  s}), white);
 
   // Ceiling
   scene.objects.emplace_back(Triangle3df({-s, s, -s}, { s, s,  s}, { s, s, -s}), white);
-  scene.objects.emplace_back(Triangle3df({-s, s, -s}, {-s, s,  s}, { s, s,  s}), white);
+  // scene.objects.emplace_back(Triangle3df({-s, s, -s}, {-s, s,  s}, { s, s,  s}), white);
 
   // Back wall
   scene.objects.emplace_back(Triangle3df({-s, -s, s}, { s, -s, s}, { s,  s, s}), white);
@@ -168,20 +171,20 @@ static Scene create_cornell_box_scene() {
 }
 
 int main(void) {
-  const int width = 400;
-  const int height = 400;
+  constexpr int width = 400;
+  constexpr int height = 400;
 
   Image image(width, height);
 
-  float aspect = static_cast<float>(width) / static_cast<float>(height);
-  Camera camera({0.0f, 0.0f, -3.5f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f, aspect);
+  constexpr float aspect = static_cast<float>(width) / static_cast<float>(height);
+  const Camera camera({0.0f, 0.0f, -3.5f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 45.0f, aspect);
 
-  Scene scene = create_cornell_box_scene();
+  const Scene scene = create_cornell_box_scene();
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      float sx = (static_cast<float>(x) + 0.5f) / static_cast<float>(width);
-      float sy = (static_cast<float>(y) + 0.5f) / static_cast<float>(height);
+      const float sx = (static_cast<float>(x) + 0.5f) / static_cast<float>(width);
+      const float sy = (static_cast<float>(y) + 0.5f) / static_cast<float>(height);
       Ray3df ray = camera.generate_ray(sx, sy);
       Vector3df color = trace_ray(scene, ray, MAX_DEPTH);
       image.set_pixel(x, y, color);
