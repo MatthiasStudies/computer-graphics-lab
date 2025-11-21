@@ -145,7 +145,7 @@ static Scene create_cornell_box_scene() {
 
   // Ceiling
   scene.objects.emplace_back(Triangle3df({-s, s, -s}, { s, s,  s}, { s, s, -s}), white);
-  // scene.objects.emplace_back(Triangle3df({-s, s, -s}, {-s, s,  s}, { s, s,  s}), white);
+  scene.objects.emplace_back(Triangle3df({-s, s, -s}, {-s, s,  s}, { s, s,  s}), white);
 
   // Back wall
   scene.objects.emplace_back(Triangle3df({-s, -s, s}, { s, -s, s}, { s,  s, s}), white);
