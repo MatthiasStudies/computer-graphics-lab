@@ -24,11 +24,11 @@ public:
   FLOAT & at(size_t row, size_t column);
   
   // returns the producut of this SquareMatrix and the given vector
-  Vector<FLOAT,N> operator*(const Vector<FLOAT,N> vector);
+  Vector<FLOAT,N> operator*(const Vector<FLOAT,N> vector) const;
 
   //  returns the product of two square matrices
   template <class F, size_t K>
-  friend SquareMatrix<F, K> operator*(const SquareMatrix<F, K> factor1, const SquareMatrix<F, K> factor2);
+  friend SquareMatrix<F, K> operator*(const SquareMatrix<F, K> & factor1, const SquareMatrix<F, K> & factor2);
 
 };
 
