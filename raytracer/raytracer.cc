@@ -77,8 +77,7 @@ static Vector3df lambert(const Scene &scene, const HitInfo &hit) {
 
   for (const auto &light : scene.lights) {
     Vector3df to_light = light.position - hit.point;
-    float dist2 = to_light.square_of_length();
-    float dist = std::sqrt(dist2);
+    float dist = to_light.length();
     to_light /= dist;
 
     // Shadow ray
@@ -127,13 +126,12 @@ static Vector3df trace_ray(const Scene &scene, const Ray3df &ray, int depth) {
 static Scene create_cornell_box_scene() {
   Scene scene;
 
-  // Materials with small ambient components to make colors clearly visible
+  // Materials
   Material red{{0.2f, 0.05f, 0.05f}, {0.9f, 0.1f, 0.1f}, {0.0f, 0.0f, 0.0f}, 0.0f};
   Material green{{0.05f, 0.2f, 0.05f}, {0.1f, 0.9f, 0.1f}, {0.0f, 0.0f, 0.0f}, 0.0f};
   Material white{{0.1f, 0.1f, 0.1f}, {0.9f, 0.9f, 0.9f}, {0.0f, 0.0f, 0.0f}, 0.0f};
   Material mirror{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 0.9f};
 
-  // Box size
   float s = 1.0f;
 
   // Floor
@@ -147,20 +145,20 @@ static Scene create_cornell_box_scene() {
   scene.objects.emplace_back(Triangle3df({-s, s, -s}, { s, s,  s}, { s, s, -s}), white);
   scene.objects.emplace_back(Triangle3df({-s, s, -s}, {-s, s,  s}, { s, s,  s}), white);
 
-  // Back wall
+  // Back
   scene.objects.emplace_back(Triangle3df({-s, -s, s}, { s, -s, s}, { s,  s, s}), white);
   scene.objects.emplace_back(Triangle3df({-s, -s, s}, { s,  s, s}, {-s,  s, s}), white);
 
-  // Left wall (red)
+  // Left
   scene.objects.emplace_back(Triangle3df({-s, -s, -s}, {-s, -s,  s}, {-s,  s,  s}), red);
   scene.objects.emplace_back(Triangle3df({-s, -s, -s}, {-s,  s,  s}, {-s,  s, -s}), red);
 
-  // Right wall (green)
+  // Right
   scene.objects.emplace_back(Triangle3df({ s, -s, -s}, { s,  s,  s}, { s, -s,  s}), green);
   scene.objects.emplace_back(Triangle3df({ s, -s, -s}, { s,  s, -s}, { s,  s,  s}), green);
 
-  // Mirror sphere in the middle
-  scene.objects.emplace_back(Sphere3df({0.0f, -s + 0.35f, 0.0f}, 0.35f), mirror);
+  // Mirror sphere
+  scene.objects.emplace_back(Sphere3df({0.0f, -0.3f, 0.0f}, 0.35f), mirror);
 
   // Light
   scene.lights.push_back({{0.0f, s - 0.2f, 0.0f}, {1.0f, 1.0f, 1.0f}});
@@ -170,7 +168,7 @@ static Scene create_cornell_box_scene() {
   return scene;
 }
 
-int main(void) {
+int main() {
   constexpr int width = 400;
   constexpr int height = 400;
 
