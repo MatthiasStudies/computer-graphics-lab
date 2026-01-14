@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required(VERSION 3.25)
 project (asteroids)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -10,6 +10,8 @@ add_executable(main_game game.cc math.cc matrix.cc geometry.cc sdl2_renderer.cc 
 
 # target_link_libraries(main_game SDL2 SDL2_mixer OPENGL32 GLEW32) # MinGW
 target_link_libraries(main_game SDL2 SDL2_mixer GL GLEW) # Linux
+
+file(COPY sound DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 enable_testing()
 add_executable(math_test math_test.cc math.cc)

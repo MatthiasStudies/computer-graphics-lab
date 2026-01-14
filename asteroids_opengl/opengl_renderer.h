@@ -81,7 +81,7 @@ class OpenGLRenderer : public Renderer {
   void renderScore(SquareMatrix4df & matrice);
   void create_shader_programs();
 public:
-  OpenGLRenderer(Game & game, std::string title, int window_width = 1024, int window_height = 768)
+  OpenGLRenderer(Game & game, std::string title, int window_width = 800, int window_height = 600)
     : Renderer(game), title(title), window_width(window_width), window_height(window_height) { }
   
   ~OpenGLRenderer() { delete [] vbos; }

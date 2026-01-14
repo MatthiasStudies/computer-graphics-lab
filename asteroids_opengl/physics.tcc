@@ -1,5 +1,6 @@
 #include <utility>
 #include <cassert>
+#include <algorithm>
 #include "debug.h"
 
 template<class FLOAT_TYPE, size_t N>
@@ -55,6 +56,7 @@ template<class FLOAT_TYPE, size_t N>
 void BoundingVolumeHyperRectangle<FLOAT_TYPE,N>::set_position(Vector<FLOAT_TYPE,N> position) {
   this->position = position;
 }
+
 
 
 template<class FLOAT_TYPE, size_t N, class BV> class Physics;
@@ -184,7 +186,8 @@ FLOAT_TYPE Physics<FLOAT_TYPE, N, BV>::get_tick_time() {
 template<class FLOAT_TYPE, size_t N, class BV>
 void Physics<FLOAT_TYPE, N, BV>::add_body( std::unique_ptr< Body<FLOAT_TYPE, N, BV> > & body ) {
   if (body != nullptr) {
-    if ( std::find( bodies.begin(), bodies.end(), body) == bodies.end() ) {
+    auto it = std::find_if(bodies.begin(), bodies.end(), [&body](const std::unique_ptr< Body<FLOAT_TYPE, N, BV> > &b){ return b.get() == body.get(); });
+    if ( it == bodies.end() ) {
       bodies_to_add.push_back( std::move(body) );
     } else {
       warning("body already in physics!");

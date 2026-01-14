@@ -29,7 +29,7 @@ class SDL2Renderer : public Renderer {
   void renderFreeShips();
   void renderScore();
 public:
-  SDL2Renderer(Game & game, std::string title, int window_width = 1024, int window_height = 768)
+  SDL2Renderer(Game & game, std::string title, int window_width = 800, int window_height = 600)
     : Renderer(game), title(title), window_width(window_width), window_height(window_height) { }
   
   virtual bool init();

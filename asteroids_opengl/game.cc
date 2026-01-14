@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 
-const int SCREEN_WIDTH = 1024;
+const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = (SCREEN_WIDTH * 3) / 4;
 
 void displacement_fix(Body2df * body, float seconds) {
@@ -29,7 +29,7 @@ void displacement_fix(Body2df * body, float seconds) {
 
 Asteroid::Asteroid(short size)
   : TypedBody( BodyType::asteroid,
-               Body2df{ BoundingVolume2df{ Vector2df{ 128.0f + 768.0f * dis(gen), 64.0f + 640.0f * dis(gen) }, size * 11.0f },
+               Body2df{ BoundingVolume2df{ Vector2df{ 128.0f + static_cast<float>(SCREEN_HEIGHT) * dis(gen), 64.0f + 640.0f * dis(gen) }, size * 11.0f },
                          Vector2df{ 0.5f - dis(gen), 0.5f - dis(gen) },
                          348.0, 0.0, 0.0, displacement_fix } ),
     size(size),
@@ -38,11 +38,11 @@ Asteroid::Asteroid(short size)
 
     velocity /= velocity.length();
     if (size == 3) { /* 5 - 10 s to cross the screen */
-      velocity *= 768.0f / 10.0f +  768.0f / 10.0f * dis(gen);
+      velocity *= static_cast<float>(SCREEN_HEIGHT) / 10.0f +  static_cast<float>(SCREEN_HEIGHT) / 10.0f * dis(gen);
     } else if (size == 2) { /* 4 - 8s */
-      velocity *= 768.0f / 8.0f +  768.0f / 8.0f * dis(gen);
+      velocity *= static_cast<float>(SCREEN_HEIGHT) / 8.0f +  static_cast<float>(SCREEN_HEIGHT) / 8.0f * dis(gen);
     } else if (size == 1) { /* 3 - 6s */
-      velocity *= 768.0f / 6.0f +  768.0f / 6.0f * dis(gen);
+      velocity *= static_cast<float>(SCREEN_HEIGHT) / 6.0f +  static_cast<float>(SCREEN_HEIGHT) / 6.0f * dis(gen);
     }
 
   }
@@ -144,7 +144,7 @@ bool Spaceship::is_in_hyperspace() {
 void Spaceship::jump_into_hyperspace(Game & game) {
   if ( ! in_hyperspace && ! is_marked_for_deletion() ) {
     set_velocity({0.0f, 0.0f});
-    set_position({512.0f + 348.0f * (0.5f - dis(gen)) , 368.0f + 256.0f * (0.5f - dis(gen)) });
+    set_position({static_cast<float>(SCREEN_WIDTH)/2.0f + 348.0f * (0.5f - dis(gen)) , static_cast<float>(SCREEN_HEIGHT)/2.0f + 256.0f * (0.5f - dis(gen)) });
     if ( dis(gen) < 0.25f ||  game.no_of_asteroids > (dis(gen) * 15.0f + 4.0f) ) {
       game.destroy_spaceship(); 
     } else {
@@ -259,16 +259,16 @@ void Game::spawn_asteroids() {
     float random = dis(gen);
     if ( random < 0.25 ) {
       position[0] = 128.0f * dis(gen);
-      position[1] = 768.0f * dis(gen);
+      position[1] = static_cast<float>(SCREEN_HEIGHT) * dis(gen);
     } else if ( random < 0.5) {
-      position[0] = 1024.0f - 128.0f * dis(gen);
-      position[1] = 768.0f * dis(gen);
+      position[0] = static_cast<float>(SCREEN_WIDTH) - 128.0f * dis(gen);
+      position[1] = static_cast<float>(SCREEN_HEIGHT) * dis(gen);
     } else if ( random < 0.75 ) {
-      position[0] = 1024.0f * dis(gen);
+      position[0] = static_cast<float>(SCREEN_WIDTH) * dis(gen);
       position[1] = 98.0f * dis(gen);
     } else {
-      position[0] = 1024.0f * dis(gen);
-      position[1] = 768.0f - 98.0f * dis(gen);      
+      position[0] = static_cast<float>(SCREEN_WIDTH) * dis(gen);
+      position[1] = static_cast<float>(SCREEN_HEIGHT) - 98.0f * dis(gen);
     }
     std::unique_ptr<Body2df> new_body = std::make_unique<Asteroid>(3, position);    
     physics.add_body(new_body);
@@ -406,9 +406,9 @@ bool Game::area_free_of_asteroids(BoundingVolume2df * bounding) {
 
 void Game::spawn_ship() {
   if ( saucer_exists() ) remove(saucer);
-  BoundingVolume2df bounding{ Vector2df{512.0f, 368.0f}, 75.0f };
+  BoundingVolume2df bounding{ Vector2df{static_cast<float>(SCREEN_WIDTH)/2.0f, static_cast<float>(SCREEN_HEIGHT)/2.0f}, 75.0f };
   if ( area_free_of_asteroids( &bounding ) ) {
-    std::unique_ptr<Body2df> new_body = std::make_unique<Spaceship>(  Vector2df{512.0f, 368.0f} );
+    std::unique_ptr<Body2df> new_body = std::make_unique<Spaceship>(  Vector2df{static_cast<float>(SCREEN_WIDTH)/2.0f, static_cast<float>(SCREEN_HEIGHT)/2.0f} );
     ship = static_cast<Spaceship *>(new_body.get());
     physics.add_body(new_body);
   }
@@ -481,8 +481,8 @@ void Game::new_saucer() {
     if ( time_since_start_of_level > 35.0f || score >= 30000LL) {
       type = 0;
     }
-    Vector2df position = { 10.0,   dis(gen) * (SCREEN_HEIGHT / 10 + (6 * SCREEN_HEIGHT) / 8)  };
-    Vector2df velocity = { 1024.0f / 8.0f, 0.0 };
+    Vector2df position = { 10.0f,   dis(gen) * (SCREEN_HEIGHT / 10 + (6 * SCREEN_HEIGHT) / 8)  };
+    Vector2df velocity = { static_cast<float>(SCREEN_WIDTH) / 8.0f, 0.0f };
     BoundingVolume2df body{position, 10.0f};
     if ( area_free_of_asteroids(&body) ) {
       if ( dis(gen) > 0.5 ) {
