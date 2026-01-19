@@ -197,7 +197,7 @@ class Game {
   short no_of_ships = NO_OF_SHIPS_AT_START;
   size_t current_no_of_asteroids = NO_OF_ASTEROIDS_AT_START; // no of asteroids at start of current level
   size_t no_of_asteroids = 0;
-  long long score = 0LL;
+  long long score = 100LL;
   // check_collision must not have side effects
   bool check_collision(Body2df *body1, Body2df *body2);
   void resolve_collision(Body2df *body1, Body2df *body2);

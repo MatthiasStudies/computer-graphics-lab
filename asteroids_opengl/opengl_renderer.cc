@@ -449,19 +449,30 @@ void OpenGLRenderer::renderFreeShips(SquareMatrix4df & matrice) {
                                  { 0.0f,                 0.0f,                1.0f, 0.0f},
                                  { 0.0f,                 0.0f,                0.0f, 1.0f}
                                };
+  SquareMatrix4df scaling = { { 10.0f, 0.0f, 0.0f, 0.0f},
+                              { 0.0f, 10.0f, 0.0f, 0.0f},
+                              { 0.0f, 0.0f, 10.0f, 0.0f},
+                              { 0.0f, 0.0f, 0.0f, 1.0f} };
+
+  SquareMatrix4df correction = { { 1.0f,  0.0f, 0.0f, 0.0f},
+                                 { 0.0f,  0.0f, 1.0f, 0.0f},
+                                 { 0.0f, -1.0f, 0.0f, 0.0f},
+                                 { 0.0f,  0.0f, 0.0f, 1.0f} };
+  correction = correction * rotation_y(90);
+
   for (int i = 0; i < game.get_no_of_ships(); i++) {
     SquareMatrix4df  translation= { {1.0f,        0.0f,         0.0f, 0.0f},
                                     {0.0f,        1.0f,         0.0f, 0.0f},
                                     {0.0f,        0.0f,         1.0f, 0.0f},
-                                    {position[0], position[1],  0.0f, 1.0f} };
-    SquareMatrix4df render_matrice = matrice * translation * rotation;
+                                    {position[0]- 100, position[1] - 35,  0.0f, 1.0f} };
+    SquareMatrix4df render_matrice = matrice * translation * rotation * scaling * correction;
     spaceship_view->render( render_matrice );
-    position[0] += 20.0;
+    position[0] += 35.0;
   }
 }
 
 void OpenGLRenderer::renderScore(SquareMatrix4df & matrice) {
-  constexpr float SCORE_X = 128 - 48;
+  constexpr float SCORE_X = 128 - 30;
   constexpr float SCORE_Y = 48 - 4;
   
 
