@@ -180,6 +180,11 @@ std::vector< std::vector<Vector2df> * > vertice_data = {
   &debris_points,
   &digit_0, &digit_1, &digit_2, &digit_3, &digit_4, &digit_5, &digit_6, &digit_7, &digit_8, &digit_9 };                                  
 
+size_t ship_vertices_count = 0;
+size_t torpedo_vertices_count = 0;
+size_t saucer_vertices_count = 0;
+size_t asteroid_vertices_count = 0;
+
 
 // class OpenGLView
 
@@ -191,8 +196,23 @@ std::vector< std::vector<Vector2df> * > vertice_data = {
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    if (mode == GL_TRIANGLES) {
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+      glEnableVertexAttribArray(0);
+
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+      glEnableVertexAttribArray(1);
+
+      glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+      glEnableVertexAttribArray(2);
+    } else {
+      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+      glEnableVertexAttribArray(0);
+      // Set default color to white for 2D elements (which don't have color attributes)
+      glVertexAttrib3f(1, 1.0f, 1.0f, 1.0f);
+      // Set default normal
+      glVertexAttrib3f(2, 0.0f, 0.0f, 1.0f);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
@@ -205,7 +225,7 @@ std::vector< std::vector<Vector2df> * > vertice_data = {
     debug(2, "render() entry...");
     glBindVertexArray(vao);
     glUseProgram(shaderProgram);
-    unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+    unsigned int transformLoc = glGetUniformLocation(shaderProgram, "model");
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &matrice[0][0] );
     glDrawArrays(mode, 0, vertices_size );
     debug(2, "render() exit.");
@@ -235,7 +255,15 @@ std::vector< std::vector<Vector2df> * > vertice_data = {
                                  {  0.0f,    0.0f, 0.0f,   1.0f}
                                };                                 
 
-    return translation * rotation * scaling;
+    SquareMatrix4df transform = translation * rotation * scaling;
+    if (mode == GL_TRIANGLES) {
+      SquareMatrix4df correction = { { 1.0f,  0.0f, 0.0f, 0.0f},
+                                     { 0.0f,  0.0f, 1.0f, 0.0f},
+                                     { 0.0f, -1.0f, 0.0f, 0.0f},
+                                     { 0.0f,  0.0f, 0.0f, 1.0f} };
+      return transform * correction;
+    }
+    return transform;
   }
 
   void TypedBodyView::render( SquareMatrix<float,4> & world) {
@@ -270,6 +298,7 @@ void OpenGLRenderer::createVbos() {
     std::vector<float> ship_vertices = create_vertices(ship_importer);
     glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
     glBufferData(GL_ARRAY_BUFFER, ship_vertices.size() * sizeof(float), ship_vertices.data(), GL_STATIC_DRAW);
+    ship_vertices_count = ship_vertices.size() / 9;
 
     std::ifstream torpedo_file("torpedo.obj");
     WavefrontImporter torpedo_importer(torpedo_file);
@@ -277,6 +306,7 @@ void OpenGLRenderer::createVbos() {
     std::vector<float> torpedo_vertices = create_vertices(torpedo_importer);
     glBindBuffer(GL_ARRAY_BUFFER, vbos[2]);
     glBufferData(GL_ARRAY_BUFFER, torpedo_vertices.size() * sizeof(float), torpedo_vertices.data(), GL_STATIC_DRAW);
+    torpedo_vertices_count = torpedo_vertices.size() / 9;
 
     std::ifstream saucer_file("saucer.obj");
     WavefrontImporter saucer_importer(saucer_file);
@@ -284,16 +314,17 @@ void OpenGLRenderer::createVbos() {
     std::vector<float> saucer_vertices = create_vertices(saucer_importer);
     glBindBuffer(GL_ARRAY_BUFFER, vbos[3]);
     glBufferData(GL_ARRAY_BUFFER, saucer_vertices.size() * sizeof(float), saucer_vertices.data(), GL_STATIC_DRAW);
+    saucer_vertices_count = saucer_vertices.size() / 9;
 
     std::ifstream asteroid_file("asteroid.obj");
     WavefrontImporter asteroid_importer(asteroid_file);
     asteroid_importer.parse();
     std::vector<float> asteroid_vertices = create_vertices(asteroid_importer);
+    asteroid_vertices_count = asteroid_vertices.size() / 9;
 
     for (int i = 0; i < 4; i++) {
       glBindBuffer(GL_ARRAY_BUFFER, vbos[4 + i]);
-      size_t offset = i * (asteroid_vertices.size() / 4);
-      glBufferData(GL_ARRAY_BUFFER, (asteroid_vertices.size() / 4) * sizeof(float), asteroid_vertices.data() + offset, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, asteroid_vertices.size() * sizeof(float), asteroid_vertices.data(), GL_STATIC_DRAW);
     }
 
     for (size_t i = 0; i < vertice_data.size(); i++) {
@@ -304,37 +335,13 @@ void OpenGLRenderer::createVbos() {
        glBindBuffer(GL_ARRAY_BUFFER, vbos[i]);
        glBufferData(GL_ARRAY_BUFFER, vertice_data[i]->size() * sizeof( Vector2df ), vertice_data[i]->data(), GL_STATIC_DRAW);
     }
-
-    glVertexAttribPointer(0,
-                        3,        // number of vertices (components)
-                        GL_FLOAT, //
-                        GL_FALSE, // no normalization
-                        9 * sizeof(float), // no of bytes between each vertice (component)
-                        (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1,
-                          3,        // no vertices (components)
-                          GL_FLOAT, //
-                          GL_FALSE, // no normalization
-                          9 * sizeof(float), // no of bytes between each color (component)
-                          (void*)(6 * sizeof(float)) ); // offset to color data in the vbo
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2,
-                          3,        // no vertices (components)
-                          GL_FLOAT, //
-                          GL_FALSE, // no normalization
-                          9 * sizeof(float), // no of bytes between each color (component)
-                          (void*)(3 * sizeof(float)) ); // offset to color data in the vbo
-    glEnableVertexAttribArray(2);
 }
 
 void OpenGLRenderer::create(Spaceship * ship, std::vector< std::unique_ptr<TypedBodyView> > & views) {
     debug(4, "create(Spaceship *) entry...");
 
 
-    views.push_back(std::make_unique<TypedBodyView>(ship, vbos[0], shaderProgram, vertice_data[0]->size(), 1.0f, GL_LINE_LOOP,
+    views.push_back(std::make_unique<TypedBodyView>(ship, vbos[0], shaderProgram, ship_vertices_count, 10.0f, GL_TRIANGLES,
                     [ship]() -> bool {return ! ship->is_in_hyperspace();}) // only show ship if outside hyperspace
                    );
     views.push_back(std::make_unique<TypedBodyView>(ship, vbos[1], shaderProgram, vertice_data[1]->size(), 1.0f, GL_LINE_LOOP,
@@ -346,18 +353,18 @@ void OpenGLRenderer::create(Spaceship * ship, std::vector< std::unique_ptr<Typed
 
 void OpenGLRenderer::create(Saucer * saucer, std::vector< std::unique_ptr<TypedBodyView> > & views) {
   debug(4, "create(Saucer *) entry...");
-  float scale = 0.5;
+  float scale = 20.0f;
   if ( saucer->get_size() == 0 ) {
-    scale = 0.25;
+    scale = 10.0f;
   }
-  views.push_back(std::make_unique<TypedBodyView>(saucer, vbos[3], shaderProgram, vertice_data[3]->size(), scale));
+  views.push_back(std::make_unique<TypedBodyView>(saucer, vbos[3], shaderProgram, saucer_vertices_count, scale, GL_TRIANGLES));
   debug(4, "create(Saucer *) exit.");
 }
 
 
 void OpenGLRenderer::create(Torpedo * torpedo, std::vector< std::unique_ptr<TypedBodyView> > & views) {
   debug(4, "create(Torpedo *) entry...");
-  views.push_back(std::make_unique<TypedBodyView>(torpedo, vbos[2], shaderProgram, vertice_data[2]->size(), 1.0f)); 
+  views.push_back(std::make_unique<TypedBodyView>(torpedo, vbos[2], shaderProgram, torpedo_vertices_count, 10.0f, GL_TRIANGLES)); 
   debug(4, "create(Torpedo *) exit.");
 }
 
@@ -365,9 +372,9 @@ void OpenGLRenderer::create(Asteroid * asteroid, std::vector< std::unique_ptr<Ty
   debug(4, "create(Asteroid *) entry...");
   GLuint rock_vbo_index = 4 +  asteroid->get_rock_type();
 
-  float scale = (asteroid->get_size() == 3 ? 1.0 : ( asteroid->get_size() == 2 ? 0.5 : 0.25 ));
+  float scale = (asteroid->get_size() == 3 ? 30.0f : ( asteroid->get_size() == 2 ? 15.0f : 7.5f ));
  
-  views.push_back(std::make_unique<TypedBodyView>(asteroid, vbos[rock_vbo_index], shaderProgram, vertice_data[rock_vbo_index]->size(), scale)); 
+  views.push_back(std::make_unique<TypedBodyView>(asteroid, vbos[rock_vbo_index], shaderProgram, asteroid_vertices_count, scale, GL_TRIANGLES)); 
   debug(4, "create(Asteroid *) exit.");
 }
 
@@ -388,7 +395,7 @@ void OpenGLRenderer::create(Debris * debris, std::vector< std::unique_ptr<TypedB
 }
 
 void OpenGLRenderer::createSpaceShipView() {
-  spaceship_view = std::make_unique<OpenGLView>(vbos[0], shaderProgram, vertice_data[0]->size(), GL_LINE_LOOP);
+  spaceship_view = std::make_unique<OpenGLView>(vbos[0], shaderProgram, ship_vertices_count, GL_TRIANGLES);
 }
 
 void OpenGLRenderer::createDigitViews() {
@@ -460,7 +467,7 @@ void OpenGLRenderer::create_shader_programs() {
         "{\n"
         "gl_Position = model * vec4(position, 1.0);\n"
         "color = incolor;\n"
-        "normal = normalize( model * vec4(innormal, 1.0));\n"
+        "normal = normalize( model * vec4(innormal, 0.0));\n"
         "}\0";
 
     // direction to light source is hard coded: (0,1,-4)
@@ -578,7 +585,7 @@ void OpenGLRenderer::render() {
                            { 2.0f / w,           0.0f,            0.0f,  0.0f},
                            {     0.0f,     -2.0f / h,            0.0f,  0.0f}, // (negative, because we have a left handed world coord. system)
                            {     0.0f,               0.0f,  2.0f / w,  0.0f},
-                           {    -1.0f,               1.0f,           -1.0f,  1.0f}
+                           {    -1.0f,               1.0f,            0.0f,  1.0f}
                          };
 
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
@@ -648,4 +655,3 @@ void OpenGLRenderer::exit() {
   SDL_DestroyWindow( window );
   SDL_Quit();
 }
-
