@@ -1,0 +1,41 @@
+mtllib asteroid.mtl
+
+# Vertices (Randomized sphere-like shape)
+v 0.0 1.2 0.0
+v 0.9 0.3 0.0
+v 0.3 0.4 0.8
+v -0.8 0.2 0.4
+v -0.4 0.5 -0.7
+v 0.5 0.1 -0.8
+v 0.0 -1.1 0.0
+v 0.8 -0.4 0.4
+v -0.7 -0.3 0.6
+v -0.6 -0.5 -0.5
+v 0.6 -0.2 -0.6
+
+# Faces
+usemtl Rock
+
+# Top Hemisphere
+f 1 2 3
+f 1 3 4
+f 1 4 5
+f 1 5 6
+f 1 6 2
+
+# Middle Band
+f 2 6 11
+f 2 11 8
+f 2 8 3
+f 3 8 9
+f 3 9 4
+f 4 9 10
+f 4 10 5
+f 5 10 11
+f 5 11 6
+
+# Bottom Hemisphere
+f 7 8 11
+f 7 9 8
+f 7 10 9
+f 7 11 10
