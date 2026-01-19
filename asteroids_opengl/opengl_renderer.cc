@@ -1,7 +1,31 @@
 #include "opengl_renderer.h"
 #include <cassert>
+#include <fstream>
 #include <span>
 #include <utility>
+
+#include "wavefront.h"
+
+Material default_material = { {1.0f, 1.0f, 1.0f} };
+std::vector<float> create_vertices(WavefrontImporter & wi) {
+  std::vector<float> vertices;
+
+  for (Face face : wi.get_faces() ) {
+    for (ReferenceGroup group : face.reference_groups ) {
+      for (size_t i = 0; i < 3; i++) {
+        vertices.push_back( group.vertice[i]);
+      }
+      for (size_t i = 0; i < 3; i++) {
+        vertices.push_back( group.normal[i] );
+      }
+      if (face.material == nullptr) face.material = &default_material;
+      for (size_t i = 0; i < 3; i++) {
+        vertices.push_back( face.material->ambient[i]);
+      }
+    }
+  }
+  return vertices;
+}
 
 
 // geometric data as in original game and game coordinates
@@ -235,24 +259,87 @@ std::vector< std::vector<Vector2df> * > vertice_data = {
 // class OpenGLRenderer
 
 void OpenGLRenderer::createVbos() {
- vbos = new GLuint[vertice_data.size()];
- glGenBuffers(vertice_data.size(), vbos);
+    vbos = new GLuint[vertice_data.size()];
+    glGenBuffers(vertice_data.size(), vbos);
 
- for (size_t i = 0; i < vertice_data.size(); i++) {
-   glBindBuffer(GL_ARRAY_BUFFER, vbos[i]);
-   glBufferData(GL_ARRAY_BUFFER, vertice_data[i]->size() * sizeof( Vector2df ), vertice_data[i]->data(), GL_STATIC_DRAW);
- }
+
+    // Load spacehip.obj, torpedo.obj, saucer.obj and asteroid.obj wavefront files
+    std::ifstream ship_file("spaceship.obj");
+    WavefrontImporter ship_importer(ship_file);
+    ship_importer.parse();
+    std::vector<float> ship_vertices = create_vertices(ship_importer);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
+    glBufferData(GL_ARRAY_BUFFER, ship_vertices.size() * sizeof(float), ship_vertices.data(), GL_STATIC_DRAW);
+
+    std::ifstream torpedo_file("torpedo.obj");
+    WavefrontImporter torpedo_importer(torpedo_file);
+    torpedo_importer.parse();
+    std::vector<float> torpedo_vertices = create_vertices(torpedo_importer);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos[2]);
+    glBufferData(GL_ARRAY_BUFFER, torpedo_vertices.size() * sizeof(float), torpedo_vertices.data(), GL_STATIC_DRAW);
+
+    std::ifstream saucer_file("saucer.obj");
+    WavefrontImporter saucer_importer(saucer_file);
+    saucer_importer.parse();
+    std::vector<float> saucer_vertices = create_vertices(saucer_importer);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos[3]);
+    glBufferData(GL_ARRAY_BUFFER, saucer_vertices.size() * sizeof(float), saucer_vertices.data(), GL_STATIC_DRAW);
+
+    std::ifstream asteroid_file("asteroid.obj");
+    WavefrontImporter asteroid_importer(asteroid_file);
+    asteroid_importer.parse();
+    std::vector<float> asteroid_vertices = create_vertices(asteroid_importer);
+
+    for (int i = 0; i < 4; i++) {
+      glBindBuffer(GL_ARRAY_BUFFER, vbos[4 + i]);
+      size_t offset = i * (asteroid_vertices.size() / 4);
+      glBufferData(GL_ARRAY_BUFFER, (asteroid_vertices.size() / 4) * sizeof(float), asteroid_vertices.data() + offset, GL_STATIC_DRAW);
+    }
+
+    for (size_t i = 0; i < vertice_data.size(); i++) {
+       if (i == 0 || i == 2 || i ==3 || (i >=4 && i <=7) ) {
+          continue; // already created above
+       }
+
+       glBindBuffer(GL_ARRAY_BUFFER, vbos[i]);
+       glBufferData(GL_ARRAY_BUFFER, vertice_data[i]->size() * sizeof( Vector2df ), vertice_data[i]->data(), GL_STATIC_DRAW);
+    }
+
+    glVertexAttribPointer(0,
+                        3,        // number of vertices (components)
+                        GL_FLOAT, //
+                        GL_FALSE, // no normalization
+                        9 * sizeof(float), // no of bytes between each vertice (component)
+                        (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1,
+                          3,        // no vertices (components)
+                          GL_FLOAT, //
+                          GL_FALSE, // no normalization
+                          9 * sizeof(float), // no of bytes between each color (component)
+                          (void*)(6 * sizeof(float)) ); // offset to color data in the vbo
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2,
+                          3,        // no vertices (components)
+                          GL_FLOAT, //
+                          GL_FALSE, // no normalization
+                          9 * sizeof(float), // no of bytes between each color (component)
+                          (void*)(3 * sizeof(float)) ); // offset to color data in the vbo
+    glEnableVertexAttribArray(2);
 }
 
 void OpenGLRenderer::create(Spaceship * ship, std::vector< std::unique_ptr<TypedBodyView> > & views) {
-  debug(4, "create(Spaceship *) entry...");
+    debug(4, "create(Spaceship *) entry...");
 
-  views.push_back(std::make_unique<TypedBodyView>(ship, vbos[0], shaderProgram, vertice_data[0]->size(), 1.0f, GL_LINE_LOOP,
-                  [ship]() -> bool {return ! ship->is_in_hyperspace();}) // only show ship if outside hyperspace
-                 );   
-  views.push_back(std::make_unique<TypedBodyView>(ship, vbos[1], shaderProgram, vertice_data[1]->size(), 1.0f, GL_LINE_LOOP,
-                  [ship]() -> bool {return ! ship->is_in_hyperspace() && ship->is_accelerating();}) // only show flame if accelerating
-                 );   
+
+    views.push_back(std::make_unique<TypedBodyView>(ship, vbos[0], shaderProgram, vertice_data[0]->size(), 1.0f, GL_LINE_LOOP,
+                    [ship]() -> bool {return ! ship->is_in_hyperspace();}) // only show ship if outside hyperspace
+                   );
+    views.push_back(std::make_unique<TypedBodyView>(ship, vbos[1], shaderProgram, vertice_data[1]->size(), 1.0f, GL_LINE_LOOP,
+                    [ship]() -> bool {return ! ship->is_in_hyperspace() && ship->is_accelerating();}) // only show flame if accelerating
+                   );
   
   debug(4, "create(Spaceship *) exit.");
 }
@@ -362,18 +449,29 @@ void OpenGLRenderer::renderScore(SquareMatrix4df & matrice) {
 
 void OpenGLRenderer::create_shader_programs() {
 
-static const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec2 p;\n"
-    "uniform mat4 transform;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = transform * vec4(p, 1.0, 1.0);\n"
-    "}\0";
-static const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+    static const char *vertexShaderSource = "#version 330 core\n"
+        "layout (location = 0) in vec3 position;\n"
+        "layout (location = 1) in vec3 incolor;\n"
+        "layout (location = 2) in vec3 innormal;\n"
+        "out vec3 color;\n"
+        "out vec4 normal;\n"
+        "uniform mat4 model;\n"
+        "void main()\n"
+        "{\n"
+        "gl_Position = model * vec4(position, 1.0);\n"
+        "color = incolor;\n"
+        "normal = normalize( model * vec4(innormal, 1.0));\n"
+        "}\0";
+
+    // direction to light source is hard coded: (0,1,-4)
+    // Lambertian shading used for vertices of triangle
+    // cause during rasterization colors are interpolated, the result is Gouraud-Shading
+    static const char *fragmentShaderSource = "#version 330 core\n"
+    "out vec4 outColor;\n"
+    "in vec3 color;\n"
+    "in vec4 normal;\n"
+    "void main () {\n"
+    "  outColor = vec4(color * (0.3 + 0.7 * max(0.0, dot(normal, normalize( vec4(0.0, 1.0, -4.0, 0.0))))) , 1.0);\n"
     "}\n\0";
 
     // build and compile vertex shader
@@ -416,7 +514,6 @@ static const char *fragmentShaderSource = "#version 330 core\n"
 }
 
 
-
 bool OpenGLRenderer::init() {
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
     error( std::string("Could not initialize SDL. SDLError: ") + SDL_GetError() );
@@ -441,6 +538,7 @@ bool OpenGLRenderer::init() {
       }
       debug(1, "Using GLEW Version: ");
       debug(1, glewGetString(GLEW_VERSION) );
+      glEnable(GL_DEPTH_TEST);
 
       SDL_GL_SetSwapInterval(1);
 
@@ -448,6 +546,9 @@ bool OpenGLRenderer::init() {
       createVbos();
       createSpaceShipView();
       createDigitViews();
+
+
+
       return true;
     }
   }
@@ -467,6 +568,7 @@ bool OpenGLRenderer::init() {
 
 void OpenGLRenderer::render() {
   debug(2, "render() entry...");
+  glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
   // transformation to canonical view and from left handed to right handed coordinates
   const auto w = static_cast<float>(window_width);
