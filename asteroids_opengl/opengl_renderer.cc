@@ -27,6 +27,33 @@ std::vector<float> create_vertices(WavefrontImporter & wi) {
   return vertices;
 }
 
+SquareMatrix4df rotation_y(const float angle_degr) {
+  const float angle = angle_degr * PI / 180.0f;
+  return { { std::cos(angle), 0.0f, -std::sin(angle), 0.0f},
+                               { 0.0f,            1.0f, 0.0f,             0.0f},
+                               { std::sin(angle), 0.0f, std::cos(angle),  0.0f},
+                               { 0.0f,            0.0f, 0.0f,             1.0f}
+    };
+}
+
+SquareMatrix4df rotation_x(const float angle_degr) {
+  const float angle = angle_degr * PI / 180.0f;
+  return { { 1.0f, 0.0f,            0.0f,             0.0f},
+           { 0.0f, std::cos(angle), -std::sin(angle), 0.0f},
+           { 0.0f, std::sin(angle), std::cos(angle),  0.0f},
+           { 0.0f, 0.0f,            0.0f,             1.0f}
+    };
+}
+
+SquareMatrix4df rotation_z(const float angle_degr) {
+  const float angle = angle_degr * PI / 180.0f;
+  return { { std::cos(angle), -std::sin(angle), 0.0f, 0.0f},
+           { std::sin(angle), std::cos(angle),  0.0f, 0.0f},
+           { 0.0f,            0.0f,             1.0f, 0.0f},
+           { 0.0f,            0.0f,             0.0f, 1.0f}
+    };
+}
+
 
 // geometric data as in original game and game coordinates
 std::vector<Vector2df> spaceship = {
@@ -261,6 +288,13 @@ size_t asteroid_vertices_count = 0;
                                      { 0.0f,  0.0f, 1.0f, 0.0f},
                                      { 0.0f, -1.0f, 0.0f, 0.0f},
                                      { 0.0f,  0.0f, 0.0f, 1.0f} };
+      if (typed_body->get_type() == BodyType::spaceship) {
+        correction = correction * rotation_y(90);
+      } else if (typed_body->get_type() == BodyType::torpedo) {
+        correction = correction * rotation_y(90);
+      } else if (typed_body->get_type() == BodyType::saucer) {
+        correction = correction * rotation_x(-90);
+      }
       return transform * correction;
     }
     return transform;
