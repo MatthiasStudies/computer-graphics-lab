@@ -6,12 +6,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_compile_options(-g -Wall -Wextra -Wpedantic -Wl,--stack,16777216)
 
-add_executable(main_game game.cc math.cc matrix.cc geometry.cc sdl2_renderer.cc opengl_renderer.cc sound.cc main_game.cc physics.cc sdl2_game_controller.cc timer.cc)
+add_executable(main_game game.cc math.cc matrix.cc geometry.cc sdl2_renderer.cc opengl_renderer.cc sound.cc main_game.cc physics.cc sdl2_game_controller.cc timer.cc
+        wavefront.cc wavefront.h)
 
 # target_link_libraries(main_game SDL2 SDL2_mixer OPENGL32 GLEW32) # MinGW
 target_link_libraries(main_game SDL2 SDL2_mixer GL GLEW) # Linux
 
 file(COPY sound DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+file(GLOB MODELS
+        "*.obj"
+        "*.mtl"
+)
+file(COPY ${MODELS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 
 enable_testing()
 add_executable(math_test math_test.cc math.cc)
