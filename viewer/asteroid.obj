@@ -1,41 +1,55 @@
 mtllib asteroid.mtl
 
-# Vertices (Randomized sphere-like shape)
-v 0.0 1.2 0.0
-v 0.9 0.3 0.0
-v 0.3 0.4 0.8
-v -0.8 0.2 0.4
-v -0.4 0.5 -0.7
-v 0.5 0.1 -0.8
-v 0.0 -1.1 0.0
-v 0.8 -0.4 0.4
-v -0.7 -0.3 0.6
-v -0.6 -0.5 -0.5
-v 0.6 -0.2 -0.6
+# Vertices
+# 1: Top Center
+v 0.0 0.5 0.0
+# 2: Bottom Center
+v 0.0 -0.5 0.0
 
-# Faces
+# Rim Vertices (Y=0)
+# P1
+v -0.455 0.0 -1.225
+# P2
+v -1.605 0.0 -0.325
+# P3
+v -0.855 0.0 -0.025
+# P4
+v -1.605 0.0 0.3
+# P5
+v -0.805 0.0 1.2
+# P6
+v -0.005 0.0 0.3
+# P7
+v -0.005 0.0 1.2
+# P8
+v 0.795 0.0 1.2
+# P9
+v 1.62 0.0 0.25
+# P10
+v 0.82 0.0 -1.225
+
 usemtl Rock
 
-# Top Hemisphere
-f 1 2 3
-f 1 3 4
-f 1 4 5
-f 1 5 6
-f 1 6 2
+# Top Faces (Center -> Next -> Current) for Upward Normal (since points are CW)
+f 1 4 3
+f 1 5 4
+f 1 6 5
+f 1 7 6
+f 1 8 7
+f 1 9 8
+f 1 10 9
+f 1 11 10
+f 1 12 11
+f 1 3 12
 
-# Middle Band
-f 2 6 11
-f 2 11 8
-f 2 8 3
-f 3 8 9
-f 3 9 4
-f 4 9 10
-f 4 10 5
-f 5 10 11
-f 5 11 6
-
-# Bottom Hemisphere
-f 7 8 11
-f 7 9 8
-f 7 10 9
-f 7 11 10
+# Bottom Faces (Center -> Current -> Next) for Downward Normal
+f 2 3 4
+f 2 4 5
+f 2 5 6
+f 2 6 7
+f 2 7 8
+f 2 8 9
+f 2 9 10
+f 2 10 11
+f 2 11 12
+f 2 12 3
