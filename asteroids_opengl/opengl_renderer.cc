@@ -263,7 +263,7 @@ void OpenGLRenderer::create(Saucer * saucer, std::vector< std::unique_ptr<TypedB
   if ( saucer->get_size() == 0 ) {
     scale = 0.25;
   }
-  views.push_back(std::make_unique<TypedBodyView>(saucer, vbos[3], shaderProgram, vertice_data[3]->size(), scale));   
+  views.push_back(std::make_unique<TypedBodyView>(saucer, vbos[3], shaderProgram, vertice_data[3]->size(), scale));
   debug(4, "create(Saucer *) exit.");
 }
 
@@ -464,29 +464,21 @@ bool OpenGLRenderer::init() {
   | 6 | 8 | 3 |
   +---+---+---+
 */
-static Vector2df tile_positions [] = {
-                         {0.0f, 0.0f},
-                         {1024.0f, 0.0f},
-                         {1024.0f, 768.0f},
-                         {1024.0f, -768.0f},
-                         {-1024.0f, 0.0f},
-                         {-1024.0f, 768.0f},
-                         {-1024.0f, -768.0f},
-                         {0.0f, 768.0f},
-                         {0.0f, -768.0f} };
 
 void OpenGLRenderer::render() {
   debug(2, "render() entry...");
 
   // transformation to canonical view and from left handed to right handed coordinates
+  const auto w = static_cast<float>(window_width);
+  const auto h = static_cast<float>(window_height);
   SquareMatrix4df world_transformation =
                          SquareMatrix4df{
-                           { 2.0f / 1024.0f,           0.0f,            0.0f,  0.0f},
-                           {       0.0f,     -2.0f / 768.0f,            0.0f,  0.0f}, // (negative, because we have a left handed world coord. system)
-                           {       0.0f,               0.0f,  2.0f / 1024.0f,  0.0f},
-                           {      -1.0f,               1.0f,           -1.0f,  1.0f}
+                           { 2.0f / w,           0.0f,            0.0f,  0.0f},
+                           {     0.0f,     -2.0f / h,            0.0f,  0.0f}, // (negative, because we have a left handed world coord. system)
+                           {     0.0f,               0.0f,  2.0f / w,  0.0f},
+                           {    -1.0f,               1.0f,           -1.0f,  1.0f}
                          };
-                                                 
+
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
   glClear ( GL_COLOR_BUFFER_BIT );
   
@@ -515,9 +507,29 @@ void OpenGLRenderer::render() {
     }
   }
 
+  SquareMatrix4df view_matrix = world_transformation;
+  Spaceship * ship = game.get_ship();
+  if (ship != nullptr) {
+    Vector2df position = ship->get_position();
+    SquareMatrix4df camera_translation = { {1.0f, 0.0f, 0.0f, 0.0f},
+                                           {0.0f, 1.0f, 0.0f, 0.0f},
+                                           {0.0f, 0.0f, 1.0f, 0.0f},
+                                           {w / 2.0f - position[0], h / 2.0f - position[1], 0.0f, 1.0f} };
+    view_matrix = world_transformation * camera_translation;
+  }
+
   debug(2, "render all views");
   for (auto & view : views) {
-    view->render( world_transformation );
+    for (int i = -1; i <= 1; ++i) {
+      for (int j = -1; j <= 1; ++j) {
+        SquareMatrix4df tile_translation = { {1.0f, 0.0f, 0.0f, 0.0f},
+                                             {0.0f, 1.0f, 0.0f, 0.0f},
+                                             {0.0f, 0.0f, 1.0f, 0.0f},
+                                             {i * w, j * h, 0.0f, 1.0f} };
+        SquareMatrix4df tiled_view_matrix = view_matrix * tile_translation;
+        view->render(tiled_view_matrix);
+      }
+    }
   }
   
   renderFreeShips(world_transformation);
@@ -534,4 +546,4 @@ void OpenGLRenderer::exit() {
   SDL_DestroyWindow( window );
   SDL_Quit();
 }
- 
+
