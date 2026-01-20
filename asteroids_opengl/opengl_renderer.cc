@@ -662,28 +662,28 @@ void OpenGLRenderer::render() {
   }
 
   SquareMatrix4df view_matrix = world_transformation;
-  Spaceship * ship = game.get_ship();
-  if (ship != nullptr) {
-    Vector2df position = ship->get_position();
-    SquareMatrix4df camera_translation = { {1.0f, 0.0f, 0.0f, 0.0f},
-                                           {0.0f, 1.0f, 0.0f, 0.0f},
-                                           {0.0f, 0.0f, 1.0f, 0.0f},
-                                           {w / 2.0f - position[0], h / 2.0f - position[1], 0.0f, 1.0f} };
-    view_matrix = world_transformation * camera_translation;
-  }
+  // Spaceship * ship = game.get_ship();
+  // if (ship != nullptr) {
+  //   Vector2df position = ship->get_position();
+  //   SquareMatrix4df camera_translation = { {1.0f, 0.0f, 0.0f, 0.0f},
+  //                                          {0.0f, 1.0f, 0.0f, 0.0f},
+  //                                          {0.0f, 0.0f, 1.0f, 0.0f},
+  //                                          {w / 2.0f - position[0], h / 2.0f - position[1], 0.0f, 1.0f} };
+  //   view_matrix = world_transformation * camera_translation;
+  // }
 
   debug(2, "render all views");
   for (auto & view : views) {
-    for (int i = -1; i <= 1; ++i) {
-      for (int j = -1; j <= 1; ++j) {
+    // for (int i = -1; i <= 1; ++i) {
+    //   for (int j = -1; j <= 1; ++j) {
         SquareMatrix4df tile_translation = { {1.0f, 0.0f, 0.0f, 0.0f},
                                              {0.0f, 1.0f, 0.0f, 0.0f},
                                              {0.0f, 0.0f, 1.0f, 0.0f},
-                                             {i * w, j * h, 0.0f, 1.0f} };
+                                             {0 * w, 0 * h, 0.0f, 1.0f} };
         SquareMatrix4df tiled_view_matrix = view_matrix * tile_translation;
         view->render(tiled_view_matrix);
-      }
-    }
+    //   }
+    // }
   }
   
   renderFreeShips(world_transformation);
