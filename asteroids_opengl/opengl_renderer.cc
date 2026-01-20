@@ -398,7 +398,7 @@ void OpenGLRenderer::create(Saucer * saucer, std::vector< std::unique_ptr<TypedB
 
 void OpenGLRenderer::create(Torpedo * torpedo, std::vector< std::unique_ptr<TypedBodyView> > & views) {
   debug(4, "create(Torpedo *) entry...");
-  views.push_back(std::make_unique<TypedBodyView>(torpedo, vbos[2], shaderProgram, torpedo_vertices_count, 10.0f, GL_TRIANGLES)); 
+  views.push_back(std::make_unique<TypedBodyView>(torpedo, vbos[2], shaderProgram, torpedo_vertices_count, 15.0f, GL_TRIANGLES));
   debug(4, "create(Torpedo *) exit.");
 }
 
